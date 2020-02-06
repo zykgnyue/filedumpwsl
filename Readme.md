@@ -9,3 +9,4 @@ dumpfile contents.
 
 * Windows text file editor line return is 0x0d 0x0a.
 
+* gcc command line option "save-temps" will save temperary intermediate files: gcc -g -save-temps -o filedump.out filedump.c
