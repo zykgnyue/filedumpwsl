@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "cstdio": "c"
+    },
+    "lldb.dereferencePointers": true,
+    "lldb.showDisassembly": "auto"
+}
