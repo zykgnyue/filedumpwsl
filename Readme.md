@@ -8,3 +8,4 @@ dumpfile contents.
 * Linux text file editor line return is 0x0a.
 
 * Windows text file editor line return is 0x0d 0x0a.
+
