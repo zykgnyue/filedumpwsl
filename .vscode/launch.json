@@ -9,14 +9,14 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/${fileBasenameNoExtension}.out",
-            "args": ["testfile.txt"]
+            "args": ["-x", "file.dat"]
         },
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/${fileBasenameNoExtension}.out",
-            "args": ["testfile.txt"],
+            "args": ["-x", "file.dat"],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
