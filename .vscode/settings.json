@@ -5,5 +5,5 @@
     },
     "lldb.dereferencePointers": true,
     "lldb.showDisassembly": "auto",
-    "editor.tabSize": 8
+    "editor.tabSize": 4
 }

@@ -17,7 +17,7 @@ int main(){
         varBig >>=40; //sarl	%cl, -4(%rbp)
         printf("signed >>40 %d,0x%8.8x\n",varBig,varBig);
 
-        uBig=0x87123456;
+        uBig=0x87123456U;
         uBig >>=4;    //shrl	$4, -8(%rbp)
         printf("signed >>4 %u,0x%8.8x\n",uBig,uBig);
 
