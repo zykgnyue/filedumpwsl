@@ -1,5 +1,6 @@
 //2.46 2.51
 #include <stdio.h>
+#include <stdint.h>
 void printfloat(float x1);
 void printdouble(double x1);
 
@@ -8,13 +9,86 @@ void printbyte(unsigned char *p, size_t len);
 void printbyte_reverse(unsigned char *p, size_t len);
 void  print_ulongbin(unsigned long data1,size_t ulen);
 void missile();
+void missile_st();
+
+//use struct to get float/double element
+#define DF_FLOAT_FRAC_BITS  (23U)
+#define DF_FLOAT_EXP_BITS   (8U)
+#define DF_DOUBLE_FRAC_BITS (52U)
+#define DF_DOUBLE_EXP_BITS   (11U)
+#define DF_SIGN_BIT   (1U)
+#define DF_BIAS_FLOAT   ((1UL<<(DF_FLOAT_EXP_BITS-1))-1UL)
+#define DF_BIAS_DOUBLE   ((1UL<<(DF_DOUBLE_EXP_BITS-1))-1UL)
+
+typedef struct{
+    uint64_t frac:DF_DOUBLE_FRAC_BITS;
+    uint64_t exp:DF_DOUBLE_EXP_BITS;
+    uint64_t s:DF_SIGN_BIT;
+
+} stdouble;
+
+typedef union{
+    double dat;
+    stdouble u64;
+} uidouble;
+
+typedef struct{
+    uint32_t frac:DF_FLOAT_FRAC_BITS;
+    uint32_t exp:DF_FLOAT_EXP_BITS;
+    uint32_t s:DF_SIGN_BIT;
+
+} stfloat;
+
+typedef union{
+    float dat;
+    stfloat u32;
+} uifloat;
+
+
 
 int main()
 {
     printf("patriot missile 0.1s\n");
-    missile();
+    //missile();
+    missile_st();
     return 0;
 
+}
+
+void missile_st()
+{
+    uifloat uf01;//向偶取整
+    uifloat uf00; //向零取整
+    uidouble ud01;
+    //uint64_t Bias=DF_BIAS_FLOAT;
+    
+    ud01.dat=(double)1.0/10.0; //accurate 
+    uf01.dat=1.0f/10.0f;
+    ///uf01.u32.frac=1;//-1.0f/10.0f;
+    ///uf01.u32.exp=0;//-1.0f/10.0f;
+    uf00.dat=uf01.dat;
+    uf00.u32.frac &=(~0x01UL);//mask out bit0
+    printf("float2double 0.1 toward even\n");
+    printf("float 0.1 toward even: %.23f\n",uf01.dat);
+    printbyte_reverse((unsigned char *)&uf01.u32,sizeof(uf01.u32));
+    printf("\nsign=%c, exp=0x%.2x, frac=%.8x\n",uf01.u32.s!=0?'-':'+',uf01.u32.exp,uf01.u32.frac);
+    //print bin
+    printf("%c",uf01.u32.s!=0?'-':'+');
+    if(uf01.u32.exp!=0)
+    {
+        if(uf01.u32.exp >= DF_BIAS_FLOAT)
+        {
+            printf("(2^%lu)*",uf01.u32.exp-DF_BIAS_FLOAT);
+        }else{
+            printf("(2^-%lu)*",DF_BIAS_FLOAT-uf01.u32.exp);
+        }
+        printf("1.");
+    }else{
+        printf("(2^-%lu)*",+DF_BIAS_FLOAT-1);
+        printf("0.");
+    }
+    print_ulongbin(uf01.u32.frac,DF_FLOAT_FRAC_BITS);
+    //("\n%c-%.2x-%.8x\n",uf01.u32.s!=0?'-':'+',uf01.u32.exp,uf01.u32.frac);
 }
 
 
@@ -60,15 +134,15 @@ void missile()
 
 }
 
-#define DF_FSIGN(x) ((x)>>(sizeof(float)*8U-1U)&0x01U)
-#define DF_FEXP(x) ((x)>>(sizeof(float)*8U-1U-8U)&0xffU)
-#define DF_FFRAC(x) ((x)&(~(0x0F8UL<<23)))
-#define DF_FMNOR(x)   ((x)|0x01UL<<24)
+#define DF_FSIGN(x) ((x)>>(sizeof(float)*8U-DF_SIGN_BIT)&0x01U)
+#define DF_FEXP(x) ((x)>>(sizeof(float)*8U-DF_SIGN_BIT-DF_FLOAT_EXP_BITS)&0xffU)
+#define DF_FFRAC(x) ((x)&(~(0x0F8UL<<DF_FLOAT_FRAC_BITS)))
+//#define DF_FMNOR(x)   ((x)|0x01UL<<24)
 
-#define DF_DSIGN(x) ((x)>>(sizeof(double)*8U-1)&0x01U)
-#define DF_DEXP(x) ((x)>>(sizeof(double)*8U-1-11)&0x7ffU)
-#define DF_DFRAC(x) ((x)&(~(0xfffUL<<52)))
-#define DF_DMNOR(x)   ((x)|(1UL<<53))
+#define DF_DSIGN(x) ((x)>>(sizeof(double)*8U-DF_SIGN_BIT)&0x01U)
+#define DF_DEXP(x) ((x)>>(sizeof(double)*8U-DF_SIGN_BIT-DF_DOUBLE_EXP_BITS)&0x7ffU)
+#define DF_DFRAC(x) ((x)&(~(0xfffUL<<DF_DOUBLE_EXP_BITS)))
+//#define DF_DMNOR(x)   ((x)|(1UL<<53))
 
 void printfloat(float x1)
 {
@@ -107,7 +181,8 @@ void printfloat(float x1)
         printf("1.");  //1bit more
     }
     //printf fraction
-    print_ulongbin(flt,(sizeof(x1)*8U-9U)); 
+    
+    print_ulongbin(flt,(sizeof(x1)*8U-DF_FLOAT_EXP_BITS-DF_SIGN_BIT)); 
 
 
 }
@@ -170,7 +245,7 @@ void printdouble(double x1)
         printf("1.");  //1bit more
     }
     //printf fraction
-    print_ulongbin(flt,(sizeof(x1)*8U-12U)); 
+    print_ulongbin(flt,(sizeof(x1)*8U-DF_DOUBLE_EXP_BITS-DF_SIGN_BIT)); 
     
 
 }
