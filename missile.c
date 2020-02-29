@@ -49,7 +49,10 @@ typedef union{
 int main()
 {
     printf("patriot missile 0.1s\n");
-    //missile();
+    missile();
+
+    //this method is depend on compiler may have compatible problem
+    printf("\n\nUsing struct & union to access float &double elements.\n");
     missile_st();
     return 0;
 
@@ -89,6 +92,35 @@ void missile_st()
     }
     print_ulongbin(uf01.u32.frac,DF_FLOAT_FRAC_BITS);
     //("\n%c-%.2x-%.8x\n",uf01.u32.s!=0?'-':'+',uf01.u32.exp,uf01.u32.frac);
+
+    //double
+    printf("\n\ndouble 0.1 toward even\n");
+    printf("double 0.1 toward even: %.23f\n",ud01.dat);
+    printbyte_reverse((unsigned char *)&ud01.u64,sizeof(ud01.u64));
+    printf("\nsign=%c, exp=0x%.2x, frac=%lx\n",ud01.u64.s!=0?'-':'+',ud01.u64.exp,(uint64_t)ud01.u64.frac);
+    //print bin
+    printf("%c",ud01.u64.s!=0?'-':'+');
+    if(ud01.u64.exp!=0)
+    {
+        if(ud01.u64.exp >= DF_BIAS_DOUBLE)
+        {
+            printf("(2^%lu)*",ud01.u64.exp-DF_BIAS_DOUBLE);
+        }else{
+            printf("(2^-%lu)*",DF_BIAS_DOUBLE-ud01.u64.exp);
+        }
+        printf("1.");
+    }else{
+        printf("(2^-%lu)*",+DF_BIAS_DOUBLE-1);
+        printf("0.");
+    }
+    print_ulongbin(ud01.u64.frac,DF_DOUBLE_FRAC_BITS);
+    //("\n%c-%.2x-%.8x\n",uf01.u32.s!=0?'-':'+',uf01.u32.exp,uf01.u32.frac);
+
+
+
+
+
+
 }
 
 
